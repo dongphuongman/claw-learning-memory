@@ -61,7 +61,7 @@ export function createLearningMemoryEngine(ctx = {}) {
       id: ENGINE_ID,
       name: "Learning Memory",
       ownsCompaction: false,
-      version: "0.1.0",
+      version: "0.2.0",
     },
 
     // We don't maintain our own store; the runtime keeps history and hands it back

@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createMemorySource } from "../src/memory-source.js";
-import { createLearningMemoryEngine } from "../src/engine.js";
+import { createLearningMemoryEngine, parseGroupId } from "../src/engine.js";
 
 function withWorkspace(files, fn) {
   const dir = mkdtempSync(join(tmpdir(), "lm-test-"));
@@ -100,4 +100,75 @@ test("engine.info + ingest + compact are safe defaults", async () => {
   // Missing workspace must not throw — degrade to no injection.
   const res = await engine.assemble({ messages: [], tokenBudget: 100 });
   assert.equal(res.systemPromptAddition, undefined);
+});
+
+// --- Group memory tests ---
+
+test("parseGroupId extracts groupId from Zalo group sessionKey", () => {
+  assert.equal(parseGroupId("agent:main:zalo:group:zgr-a72838409c15754b2c04"), "zgr-a72838409c15754b2c04");
+});
+
+test("parseGroupId returns null for non-group sessionKey", () => {
+  assert.equal(parseGroupId("agent:main:main"), null);
+  assert.equal(parseGroupId(undefined), null);
+  assert.equal(parseGroupId(""), null);
+});
+
+test("memory-source injects group memory when file exists", () => {
+  withWorkspace({ "MEMORY.md": "- rule: greet politely" }, (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "group-zgr-abc123.md"), "- Nội quy nhóm ABC: luôn dùng tiếng Việt", "utf8");
+    const src = createMemorySource({ workspaceDir: dir });
+    const block = src.build("zgr-abc123");
+    assert.match(block, /greet politely/);
+    assert.match(block, /Nội quy nhóm ABC/);
+    assert.match(block, /group context \(zgr-abc123\)/);
+  });
+});
+
+test("memory-source skips group memory silently when file missing", () => {
+  withWorkspace({ "MEMORY.md": "- rule: be nice" }, (dir) => {
+    const src = createMemorySource({ workspaceDir: dir });
+    const block = src.build("zgr-nonexistent");
+    assert.match(block, /be nice/);
+    assert.doesNotMatch(block, /group context/);
+  });
+});
+
+test("memory-source respects charBudget with group content (budget split)", () => {
+  withWorkspace({ "MEMORY.md": "x".repeat(5000) }, (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "group-zgr-test.md"), "y".repeat(3000), "utf8");
+    const src = createMemorySource({ workspaceDir: dir, config: { charBudget: 2000, groupBudgetRatio: 0.3 } });
+    const block = src.build("zgr-test");
+    assert.match(block, /group memory truncated/);
+    assert.match(block, /memory truncated/);
+  });
+});
+
+test("memory-source ignores group memory when groupMemory=false", () => {
+  withWorkspace({ "MEMORY.md": "- rule: x" }, (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "group-zgr-off.md"), "- group stuff", "utf8");
+    const src = createMemorySource({ workspaceDir: dir, config: { groupMemory: false } });
+    const block = src.build("zgr-off");
+    assert.doesNotMatch(block, /group stuff/);
+    assert.doesNotMatch(block, /group context/);
+  });
+});
+
+test("engine.assemble injects group memory for group sessionKey", async () => {
+  await withWorkspace({ "MEMORY.md": "- fact: sky is blue" }, async (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "group-zgr-eng.md"), "- group rule: speak Vietnamese", "utf8");
+    const engine = createLearningMemoryEngine({ workspaceDir: dir });
+    const res = await engine.assemble({
+      messages: [{ role: "user", content: "hi" }],
+      tokenBudget: 8000,
+      sessionKey: "agent:main:zalo:group:zgr-eng",
+    });
+    assert.match(res.systemPromptAddition, /sky is blue/);
+    assert.match(res.systemPromptAddition, /speak Vietnamese/);
+    assert.match(res.systemPromptAddition, /group context/);
+  });
 });

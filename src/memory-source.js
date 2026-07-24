@@ -91,7 +91,7 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
       return [];
     }
     const names = entries
-      .filter((e) => e.isFile() && /\.md$/i.test(e.name))
+      .filter((e) => e.isFile() && /^\d{4}-\d{2}-\d{2}\.md$/i.test(e.name))
       .map((e) => e.name)
       .sort(); // date-named files (YYYY-MM-DD.md) sort chronologically
     return names.slice(-recentDays).map((name) => join(dir, name));
