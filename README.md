@@ -1,31 +1,31 @@
 # Claw-learning-memory
 
-**Always-on memory** for OpenClaw agents.
+**Memory luôn bật** cho OpenClaw agent.
 
-A [context engine](https://docs.openclaw.ai/concepts/context-engine) that injects a
-curated **`MEMORY.md` + `USER.md`** block into **every agent turn — including group and
-channel sessions**, which OpenClaw's default memory recall excludes. This is why bots in
-Zalo/Telegram groups "forget" context and rules over time; this plugin fixes that by
-loading your curated memory on every run (an always-on prompt-memory layer).
+Một [context engine](https://docs.openclaw.ai/concepts/context-engine) inject nội dung
+**`MEMORY.md` + `USER.md`** đã chắt lọc vào **mọi lượt chạy của agent — kể cả trong
+group và channel**, vốn bị cơ chế memory recall mặc định của OpenClaw bỏ qua. Đây là
+lý do bot trong các nhóm Zalo/Telegram hay "quên" ngữ cảnh và quy tắc; plugin này khắc
+phục bằng cách nạp memory mỗi lượt chạy (lớp prompt-memory luôn bật).
 
-## What it does
+## Plugin làm gì
 
-- **Always-on**: reads the agent's curated memory files and prepends them to the system
-  prompt on **every** run (all sessions, groups included) via `systemPromptAddition`.
-- **Per-group memory**: in group sessions, loads `memory/group-<groupId>.md` so each
-  group has its own rules and context. Budget is split with a configurable ratio (default
-  30% for group, 70% for shared).
-- **Curated, not bloated**: a tight character budget (default 6000) forces the agent to
-  curate — a small sharp memory beats a huge one. Overflow is trimmed, not accumulated.
-- **Safe & thin**: it does **not** reinvent history storage or compaction. History is
-  passed through untouched and compaction stays with the runtime (`ownsCompaction:false`).
-  Any read hiccup degrades to "no injection" for that turn; a hard error quarantines the
-  engine and the host falls back to the legacy engine — it can't brick an agent.
+- **Luôn bật**: đọc các file memory của agent và chèn vào system prompt **mỗi lượt**
+  chạy (mọi session, kể cả group) qua `systemPromptAddition`.
+- **Memory riêng theo group**: trong group session, tự đọc thêm
+  `memory/group-<groupId>.md` để mỗi nhóm có nội quy và ngữ cảnh riêng. Ngân sách ký tự
+  được chia theo tỉ lệ cấu hình (mặc định 30% cho group, 70% cho phần chung).
+- **Chắt lọc, không phình**: giới hạn ký tự chặt (mặc định 6000) ép agent phải chắt
+  lọc — memory nhỏ mà sắc bén tốt hơn memory khổng lồ. Vượt ngưỡng thì cắt bớt.
+- **An toàn & mỏng**: plugin **không** tự quản lý lịch sử hội thoại hay nén context.
+  Lịch sử được truyền thẳng qua, việc nén do runtime lo (`ownsCompaction:false`).
+  Lỗi đọc file → bỏ qua lượt đó; lỗi nặng → OpenClaw cách ly engine và dùng engine
+  dự phòng — bot không bao giờ bị chết.
 
-It does **not** need a remote memory database. Your memory lives in local workspace files
-that the agent already writes (`MEMORY.md`, `USER.md`).
+Plugin **không** cần database từ xa. Memory nằm trong file workspace local mà agent
+tự viết (`MEMORY.md`, `USER.md`).
 
-## Install
+## Cài đặt
 
 ### Bước 1 — Cài plugin
 
@@ -72,9 +72,9 @@ Mở file `openclaw.json` (trong thư mục cấu hình của agent) và thêm:
 
 Restart gateway sau khi cấu hình xong.
 
-## Config
+## Cấu hình
 
-Tất cả option cấu hình đặt trong `plugins.entries.learning-memory.config`.
+Tất cả option đặt trong `plugins.entries.learning-memory.config`.
 
 Ví dụ đầy đủ:
 
@@ -97,9 +97,9 @@ Ví dụ đầy đủ:
 }
 ```
 
-### Bảng tham chiếu config
+### Bảng tham chiếu
 
-| Field | Default | Ý nghĩa |
+| Trường | Mặc định | Ý nghĩa |
 |---|---|---|
 | `enabled` | `true` | Bật/tắt toàn bộ plugin. |
 | `charBudget` | `6000` | Giới hạn ký tự memory inject mỗi lượt. Vượt quá thì cắt bớt. |
@@ -108,10 +108,10 @@ Ví dụ đầy đủ:
 | `recentDays` | `2` | Số file nhật ký ngày gần nhất được inject (đặt `0` để tắt). |
 | `header` | — | Tiêu đề tùy chỉnh phía trên khối memory (mặc định có sẵn). |
 | `groupMemory` | `true` | Bật/tắt memory riêng theo group. |
-| `groupMemoryPattern` | `"memory/group-{groupId}.md"` | Mẫu đường dẫn file group. `{groupId}` sẽ được thay bằng ID thật. |
-| `groupBudgetRatio` | `0.3` | Tỉ lệ tối đa của `charBudget` dành cho group (0–1). Phần dư sẽ chuyển cho memory chung. |
+| `groupMemoryPattern` | `"memory/group-{groupId}.md"` | Mẫu đường dẫn file group. `{groupId}` được thay bằng ID thật. |
+| `groupBudgetRatio` | `0.3` | Tỉ lệ tối đa của `charBudget` dành cho group (0–1). Phần dư chuyển cho memory chung. |
 
-## Per-group memory
+## Memory riêng theo group
 
 ### Vấn đề
 
@@ -164,13 +164,13 @@ Muốn đổi tỉ lệ: chỉnh `groupBudgetRatio` trong config (ví dụ `0.5`
 
 Muốn tắt hẳn: đặt `"groupMemory": false`.
 
-## How the agent keeps memory good
+## Agent giữ memory tốt bằng cách nào
 
 Plugin chỉ **đọc** memory; agent phải tự **viết và chắt lọc** nó. Kết hợp với
 instruction dặn agent ghi các sự kiện, quy tắc quan trọng vào `MEMORY.md` (dạng
 bullet points ngắn gọn) và giữ file gọn. Vì file được inject mỗi lượt, những gì
 agent viết sẽ thực sự quay lại — memory tích lũy thay vì bay hơi.
 
-## License
+## Giấy phép
 
 MIT © dongphuongman
