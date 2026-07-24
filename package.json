@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-learning-memory",
+  "name": "@dongphuongman/openclaw-learning-memory",
   "version": "0.1.1",
   "description": "Always-on memory for OpenClaw agents — a context engine that injects a curated MEMORY.md + USER.md into every turn (including group/channel sessions), so bots stop forgetting context and rules.",
   "type": "module",
@@ -29,12 +29,12 @@
     }
   },
   "license": "MIT",
-  "author": "tuanminhhole",
+  "author": "dongphuongman",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tuanminhhole/openclaw-learning-memory.git"
+    "url": "https://github.com/dongphuongman/openclaw-learning-memory.git"
   },
-  "homepage": "https://github.com/tuanminhhole/openclaw-learning-memory",
+  "homepage": "https://github.com/dongphuongman/openclaw-learning-memory",
   "files": [
     "index.js",
     "src",

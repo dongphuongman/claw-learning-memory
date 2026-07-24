@@ -1,4 +1,20 @@
-# OpenClaw Learning Memory
+# @dongphuongman/openclaw-learning-memory
+
+> **Fork** of [tuanminhhole/openclaw-learning-memory](https://github.com/tuanminhhole/openclaw-learning-memory).
+> Forked to add per-group memory and maintain long-term.
+
+## Changes from upstream
+
+- Renamed package to `@dongphuongman/openclaw-learning-memory`
+- *(more changes will be listed here as they land)*
+
+## TODO
+
+- [ ] Rename plugin id from `learning-memory` to a custom id — requires
+  matching changes in `openclaw.json` (`plugins.entries`, `agents.*.plugins.slots`),
+  deferred to avoid breakage.
+
+---
 
 **Always-on memory** for OpenClaw agents.
 
@@ -62,3 +78,4 @@ what the agent writes actually comes back — so it compounds instead of evapora
 ## License
 
 MIT © tuanminhhole
+Modifications MIT © dongphuongman
