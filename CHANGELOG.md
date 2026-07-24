@@ -4,6 +4,25 @@
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-07-24
+
+### Thêm mới
+- **Memory riêng theo từng group.** Khi chạy trong group session (Zalo, Telegram, …),
+  plugin tự đọc `memory/group-<groupId>.md` và inject cùng memory chung. Mỗi nhóm có
+  ngữ cảnh/nội quy riêng, không lẫn nhau. Config: `groupMemory` (bật/tắt),
+  `groupMemoryPattern` (mẫu đường dẫn), `groupBudgetRatio` (tỉ lệ budget, mặc định 0.3).
+- **Chia ngân sách ký tự (budget split).** Group memory dùng tối đa `groupBudgetRatio`
+  × `charBudget`; phần dư chuyển cho shared memory và ngược lại. Tổng không vượt
+  `charBudget`.
+
+### Sửa lỗi
+- **Daily log filter siết lại:** chỉ đọc file tên đúng dạng `YYYY-MM-DD.md` trong thư
+  mục memory, tránh nhầm file group hay file khác thành nhật ký ngày.
+
+### Fork
+- Đổi tên package thành `@dongphuongman/openclaw-learning-memory`.
+- Giữ nguyên plugin id `learning-memory` để tương thích.
+
 ## [0.1.1] — 2026-07-24
 
 ### Sửa lỗi

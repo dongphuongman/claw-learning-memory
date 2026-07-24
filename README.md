@@ -6,7 +6,9 @@
 ## Changes from upstream
 
 - Renamed package to `@dongphuongman/openclaw-learning-memory`
-- *(more changes will be listed here as they land)*
+- Per-group memory: auto-loads `memory/group-<groupId>.md` in group sessions
+- Budget splitting (configurable ratio) between shared and group memory
+- Daily log filter tightened to `YYYY-MM-DD.md` only
 
 ## TODO
 
@@ -64,9 +66,38 @@ Under `plugins.entries.learning-memory.config`:
 | Field | Default | Meaning |
 |---|---|---|
 | `enabled` | `true` | Toggle the injection. |
-| `charBudget` | `3500` | Max characters of memory injected per turn (older/overflow trimmed). |
+| `charBudget` | `6000` | Max characters of memory injected per turn (older/overflow trimmed). |
 | `files` | `["MEMORY.md","USER.md"]` | Workspace files injected every turn, in order. |
+| `memoryDir` | `"memory"` | Directory holding daily logs (`YYYY-MM-DD.md`). |
+| `recentDays` | `2` | How many recent daily logs to inject (0 to disable). |
 | `header` | — | Optional heading above the injected block. |
+| `groupMemory` | `true` | Enable per-group memory (reads `memory/group-<groupId>.md` in group sessions). |
+| `groupMemoryPattern` | `"memory/group-{groupId}.md"` | Path template for group memory files. `{groupId}` is replaced at runtime. |
+| `groupBudgetRatio` | `0.3` | Max fraction of `charBudget` for group memory (0–1). Unused space transfers to shared memory. |
+
+## Per-group memory
+
+When the bot runs in a group session (e.g. a Zalo group), the plugin automatically
+loads `memory/group-<groupId>.md` alongside the shared memory files. Each group gets
+its own rules and context without polluting other groups.
+
+Create a file for each group:
+
+```
+memory/group-zgr-a72838409c15754b2c04.md
+```
+
+```markdown
+- Nhóm này nói tiếng Việt
+- Nội quy: không spam, trả lời ngắn gọn
+- Dự án chính: Thiên Ba Phủ
+```
+
+The group ID comes from the session key (visible in OpenClaw's session database).
+Budget is split: group gets up to 30% of `charBudget` by default; if either side
+uses less, the unused space goes to the other.
+
+To disable: set `groupMemory: false` in config.
 
 ## How the agent keeps memory good
 

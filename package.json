@@ -1,6 +1,6 @@
 {
   "name": "@dongphuongman/openclaw-learning-memory",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Always-on memory for OpenClaw agents — a context engine that injects a curated MEMORY.md + USER.md into every turn (including group/channel sessions), so bots stop forgetting context and rules.",
   "type": "module",
   "main": "index.js",
