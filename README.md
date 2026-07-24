@@ -1,22 +1,4 @@
-# claw-learning-memory
-
-> **Fork** of [tuanminhhole/openclaw-learning-memory](https://github.com/tuanminhhole/openclaw-learning-memory).
-> Forked to add per-group memory and maintain long-term.
-
-## Changes from upstream
-
-- Renamed package to `@dongphuongman/openclaw-learning-memory`
-- Per-group memory: auto-loads `memory/group-<groupId>.md` in group sessions
-- Budget splitting (configurable ratio) between shared and group memory
-- Daily log filter tightened to `YYYY-MM-DD.md` only
-
-## TODO
-
-- [ ] Rename plugin id from `learning-memory` to a custom id — requires
-  matching changes in `openclaw.json` (`plugins.entries`, `agents.*.plugins.slots`),
-  deferred to avoid breakage.
-
----
+# Claw-learning-memory
 
 **Always-on memory** for OpenClaw agents.
 
