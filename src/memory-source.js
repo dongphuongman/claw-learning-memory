@@ -23,6 +23,8 @@ const DEFAULT_MEMORY_DIR = "memory";
 const DEFAULT_RECENT_DAYS = 2;
 const DEFAULT_CHAR_BUDGET = 6000;
 const PER_DAILY_TAIL_CHARS = 1500; // keep the newest entries of a long daily log
+const DEFAULT_GROUP_MEMORY_PATTERN = "memory/group-{groupId}.md";
+const DEFAULT_GROUP_BUDGET_RATIO = 0.3;
 
 export function createMemorySource({ workspaceDir, config, logger } = {}) {
   const files =
@@ -40,6 +42,15 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
       ? Math.floor(config.charBudget)
       : DEFAULT_CHAR_BUDGET;
   const header = typeof config?.header === "string" ? config.header : "";
+  const groupMemoryEnabled = config?.groupMemory !== false;
+  const groupMemoryPattern =
+    typeof config?.groupMemoryPattern === "string" && config.groupMemoryPattern.trim()
+      ? config.groupMemoryPattern.trim()
+      : DEFAULT_GROUP_MEMORY_PATTERN;
+  const groupBudgetRatio =
+    Number.isFinite(config?.groupBudgetRatio) && config.groupBudgetRatio > 0 && config.groupBudgetRatio < 1
+      ? config.groupBudgetRatio
+      : DEFAULT_GROUP_BUDGET_RATIO;
 
   /** @type {Map<string, { mtimeMs: number, text: string }>} */
   const cache = new Map();
@@ -87,7 +98,7 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
   }
 
   /** Build the injected block, or "" when there's nothing worth injecting. */
-  function build() {
+  function build(groupId) {
     const parts = [];
 
     // Curated layer first (rules + long-term facts + user profile).
@@ -97,8 +108,7 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
       parts.push(`### ${rel.replace(/\.md$/i, "")}\n${trimmed}`);
     }
 
-    // Real-time layer: recent daily logs (freshest last). Keep the tail of a long log
-    // so the newest entries survive.
+    // Real-time layer: recent daily logs (freshest last).
     for (const full of recentDailyFiles()) {
       let trimmed = (readFileCached(full) || "").trim();
       if (!trimmed) continue;
@@ -109,12 +119,49 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
       parts.push(`### recent notes (${label})\n${trimmed}`);
     }
 
-    if (!parts.length) return "";
+    // Group-specific layer.
+    let groupBody = "";
+    if (groupMemoryEnabled && groupId) {
+      const groupPath = resolvePath(groupMemoryPattern.replace("{groupId}", groupId));
+      const groupContent = (readFileCached(groupPath) || "").trim();
+      if (groupContent) {
+        groupBody = `### group context (${groupId})\n${groupContent}`;
+      }
+    }
 
-    let body = parts.join("\n\n");
-    if (body.length > charBudget) {
-      body = body.slice(0, charBudget).replace(/\s+\S*$/, "") + "\n…(memory truncated)";
-      logger?.debug?.(`[learning-memory] memory block trimmed to ~${charBudget} chars`);
+    const sharedBody = parts.join("\n\n");
+    if (!sharedBody && !groupBody) return "";
+
+    const sep = "\n\n";
+    let body;
+    if (groupBody) {
+      // Budget splitting: group gets up to ratio * budget; unused space transfers.
+      const groupCap = Math.floor(charBudget * groupBudgetRatio);
+      let gTrimmed = groupBody.length > groupCap
+        ? groupBody.slice(0, groupCap).replace(/\s+\S*$/, "") + "\n…(group memory truncated)"
+        : groupBody;
+
+      const sharedCap = Math.max(0, charBudget - gTrimmed.length - sep.length);
+      let sTrimmed = sharedBody.length > sharedCap
+        ? sharedBody.slice(0, Math.max(0, sharedCap)).replace(/\s+\S*$/, "") + "\n…(memory truncated)"
+        : sharedBody;
+
+      // If shared left room, let group expand beyond its ratio.
+      if (sTrimmed.length + sep.length + gTrimmed.length < charBudget && gTrimmed.length < groupBody.length) {
+        const expandedCap = Math.max(0, charBudget - sTrimmed.length - sep.length);
+        gTrimmed = groupBody.length > expandedCap
+          ? groupBody.slice(0, expandedCap).replace(/\s+\S*$/, "") + "\n…(group memory truncated)"
+          : groupBody;
+      }
+
+      body = sTrimmed ? sTrimmed + sep + gTrimmed : gTrimmed;
+      logger?.debug?.(`[learning-memory] budget split: shared=${sTrimmed.length}, group=${gTrimmed.length}, total=${body.length}/${charBudget}`);
+    } else {
+      body = sharedBody;
+      if (body.length > charBudget) {
+        body = body.slice(0, charBudget).replace(/\s+\S*$/, "") + "\n…(memory truncated)";
+        logger?.debug?.(`[learning-memory] memory block trimmed to ~${charBudget} chars`);
+      }
     }
 
     const head = header
@@ -123,5 +170,5 @@ export function createMemorySource({ workspaceDir, config, logger } = {}) {
     return `${head}\n\n${body}`;
   }
 
-  return { build, _charBudget: charBudget, _files: files, _recentDays: recentDays };
+  return { build, _charBudget: charBudget, _files: files, _recentDays: recentDays, _groupMemoryEnabled: groupMemoryEnabled, _groupBudgetRatio: groupBudgetRatio };
 }

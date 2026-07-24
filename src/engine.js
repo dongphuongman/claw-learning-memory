@@ -2,6 +2,14 @@ import { createMemorySource } from "./memory-source.js";
 
 export const ENGINE_ID = "learning-memory";
 
+/** Extract groupId from a sessionKey like "agent:main:zalo:group:zgr-abc123". */
+export function parseGroupId(sessionKey) {
+  if (typeof sessionKey !== "string") return null;
+  const parts = sessionKey.split(":");
+  const idx = parts.lastIndexOf("group");
+  return idx >= 0 && idx < parts.length - 1 ? parts[idx + 1] : null;
+}
+
 /** Cheap token estimate (~4 chars/token) over a message list. */
 function estimateTokens(messages) {
   let chars = 0;
@@ -62,12 +70,13 @@ export function createLearningMemoryEngine(ctx = {}) {
       return { ingested: false };
     },
 
-    async assemble({ messages, tokenBudget } = {}) {
+    async assemble({ messages, tokenBudget, sessionKey } = {}) {
       const msgs = Array.isArray(messages) ? messages : [];
       let systemPromptAddition;
       if (enabled) {
         try {
-          const block = source.build();
+          const groupId = parseGroupId(sessionKey);
+          const block = source.build(groupId);
           if (block) systemPromptAddition = block;
         } catch (err) {
           logger?.warn?.(`[learning-memory] memory build failed: ${String(err)}`);

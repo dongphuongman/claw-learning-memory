@@ -53,6 +53,21 @@
       "header": {
         "type": "string",
         "description": "Optional heading text placed above the injected memory block."
+      },
+      "groupMemory": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable per-group memory injection. When a group session is detected, reads memory/group-<groupId>.md and appends it."
+      },
+      "groupMemoryPattern": {
+        "type": "string",
+        "default": "memory/group-{groupId}.md",
+        "description": "Path template for group memory files (relative to workspace). {groupId} is replaced with the group identifier."
+      },
+      "groupBudgetRatio": {
+        "type": "number",
+        "default": 0.3,
+        "description": "Max fraction of charBudget reserved for group memory (0-1). If group content is smaller, unused space goes to shared memory and vice versa."
       }
     },
     "additionalProperties": true
