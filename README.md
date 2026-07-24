@@ -1,4 +1,4 @@
-# @dongphuongman/openclaw-learning-memory
+# claw-learning-memory
 
 > **Fork** of [tuanminhhole/openclaw-learning-memory](https://github.com/tuanminhhole/openclaw-learning-memory).
 > Forked to add per-group memory and maintain long-term.
@@ -30,7 +30,10 @@ loading your curated memory on every run (an always-on prompt-memory layer).
 
 - **Always-on**: reads the agent's curated memory files and prepends them to the system
   prompt on **every** run (all sessions, groups included) via `systemPromptAddition`.
-- **Curated, not bloated**: a tight character budget (default 3500) forces the agent to
+- **Per-group memory**: in group sessions, loads `memory/group-<groupId>.md` so each
+  group has its own rules and context. Budget is split with a configurable ratio (default
+  30% for group, 70% for shared).
+- **Curated, not bloated**: a tight character budget (default 6000) forces the agent to
   curate — a small sharp memory beats a huge one. Overflow is trimmed, not accumulated.
 - **Safe & thin**: it does **not** reinvent history storage or compaction. History is
   passed through untouched and compaction stays with the runtime (`ownsCompaction:false`).
@@ -43,7 +46,13 @@ that the agent already writes (`MEMORY.md`, `USER.md`).
 ## Install
 
 ```
-clawhub package install dongphuongman/openclaw-learning-memory
+clawhub package install dongphuongman/claw-learning-memory
+```
+
+Or from a local path (useful for Docker dev with `--link`):
+
+```
+openclaw plugins install -l ./claw-learning-memory
 ```
 
 Then select it as the agent's context engine in `openclaw.json`:

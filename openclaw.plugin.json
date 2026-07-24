@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "author": "dongphuongman",
   "license": "MIT",
-  "homepage": "https://github.com/dongphuongman/openclaw-learning-memory",
+  "homepage": "https://github.com/dongphuongman/claw-learning-memory",
   "kind": "context-engine",
   "enabledByDefault": false,
   "activation": {

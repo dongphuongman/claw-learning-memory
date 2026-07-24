@@ -14,7 +14,7 @@
       "minGatewayVersion": "2026.5.7"
     },
     "install": {
-      "clawhubSpec": "dongphuongman/openclaw-learning-memory",
+      "clawhubSpec": "dongphuongman/claw-learning-memory",
       "defaultChoice": "clawhub",
       "minHostVersion": ">=2026.5.7"
     },
@@ -32,9 +32,9 @@
   "author": "dongphuongman",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dongphuongman/openclaw-learning-memory.git"
+    "url": "https://github.com/dongphuongman/claw-learning-memory.git"
   },
-  "homepage": "https://github.com/dongphuongman/openclaw-learning-memory",
+  "homepage": "https://github.com/dongphuongman/claw-learning-memory",
   "files": [
     "index.js",
     "src",
