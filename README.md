@@ -77,5 +77,4 @@ what the agent writes actually comes back — so it compounds instead of evapora
 
 ## License
 
-MIT © tuanminhhole
-Modifications MIT © dongphuongman
+MIT © dongphuongman
