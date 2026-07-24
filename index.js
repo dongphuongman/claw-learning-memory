@@ -9,7 +9,7 @@
  *   { "agents": { "defaults": { "plugins": { "slots": { "contextEngine": "learning-memory" } } } } }
  * (or the equivalent per-agent slot). See README for details.
  *
- * @author tuanminhhole
+ * @author dongphuongman (fork of tuanminhhole)
  */
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { createLearningMemoryEngine, ENGINE_ID } from "./src/engine.js";

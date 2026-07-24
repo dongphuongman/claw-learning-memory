@@ -14,7 +14,7 @@
       "minGatewayVersion": "2026.5.7"
     },
     "install": {
-      "clawhubSpec": "tuanminhhole/openclaw-learning-memory",
+      "clawhubSpec": "dongphuongman/openclaw-learning-memory",
       "defaultChoice": "clawhub",
       "minHostVersion": ">=2026.5.7"
     },

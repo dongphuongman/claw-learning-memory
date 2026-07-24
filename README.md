@@ -43,7 +43,7 @@ that the agent already writes (`MEMORY.md`, `USER.md`).
 ## Install
 
 ```
-clawhub package install tuanminhhole/openclaw-learning-memory
+clawhub package install dongphuongman/openclaw-learning-memory
 ```
 
 Then select it as the agent's context engine in `openclaw.json`:
