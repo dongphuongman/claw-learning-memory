@@ -2,7 +2,7 @@
   "id": "learning-memory",
   "name": "OpenClaw Learning Memory",
   "description": "Always-on memory: a context engine that injects a curated MEMORY.md + USER.md into every agent turn (including group/channel sessions), so bots keep context and rules instead of forgetting them.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "tuanminhhole",
   "license": "MIT",
   "homepage": "https://github.com/tuanminhhole/openclaw-learning-memory",
@@ -26,8 +26,8 @@
       },
       "charBudget": {
         "type": "number",
-        "default": 3500,
-        "description": "Max characters of curated memory injected per turn (kept tight to force curation over accumulation). Older/overflowing content is trimmed."
+        "default": 6000,
+        "description": "Max characters of memory injected per turn (curated files + recent daily logs). Overflow is trimmed."
       },
       "files": {
         "type": "array",
@@ -38,7 +38,17 @@
           "MEMORY.md",
           "USER.md"
         ],
-        "description": "Workspace files (relative to the agent workspace) injected every turn, in order."
+        "description": "Curated workspace files (relative to the agent workspace) injected every turn, in order."
+      },
+      "memoryDir": {
+        "type": "string",
+        "default": "memory",
+        "description": "Directory (relative to workspace) holding real-time daily logs (memory/YYYY-MM-DD.md). Their most recent entries are injected so 'remember this' works instantly, before the dreaming cron folds them into MEMORY.md."
+      },
+      "recentDays": {
+        "type": "number",
+        "default": 2,
+        "description": "How many of the most recent daily log files to inject (0 to disable)."
       },
       "header": {
         "type": "string",

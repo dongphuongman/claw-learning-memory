@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createMemorySource } from "../src/memory-source.js";
@@ -45,6 +45,29 @@ test("memory-source respects charBudget (trims)", () => {
     const block = src.build();
     assert.ok(block.length < 700, `expected trimmed block, got ${block.length}`);
     assert.match(block, /memory truncated/);
+  });
+});
+
+test("memory-source injects the most recent daily logs (real-time notes)", () => {
+  withWorkspace({ "MEMORY.md": "- rule: end with 👾" }, (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "2026-07-23.md"), "- old note from yesterday", "utf8");
+    writeFileSync(join(dir, "memory", "2026-07-24.md"), "- Dự án chính: Thiên Ba Phủ", "utf8");
+    const src = createMemorySource({ workspaceDir: dir });
+    const block = src.build();
+    // Fresh learning from today's daily log must be present even though it's NOT in MEMORY.md.
+    assert.match(block, /Thiên Ba Phủ/);
+    assert.match(block, /end with 👾/); // curated rule still there
+    assert.match(block, /recent notes \(2026-07-24\)/);
+  });
+});
+
+test("memory-source recentDays=0 disables daily-log injection", () => {
+  withWorkspace({ "MEMORY.md": "- rule" }, (dir) => {
+    mkdirSync(join(dir, "memory"), { recursive: true });
+    writeFileSync(join(dir, "memory", "2026-07-24.md"), "- Thiên Ba Phủ", "utf8");
+    const src = createMemorySource({ workspaceDir: dir, config: { recentDays: 0 } });
+    assert.doesNotMatch(src.build(), /Thiên Ba Phủ/);
   });
 });
 
