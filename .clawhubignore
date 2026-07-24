@@ -1,0 +1,9 @@
+.agent/
+.claude/
+data/
+tests/
+.gitignore
+.clawhubignore
+*.tgz
+npm-debug.log*
+docs_dev/

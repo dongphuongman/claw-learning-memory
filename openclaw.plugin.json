@@ -1,0 +1,53 @@
+{
+  "id": "learning-memory",
+  "name": "OpenClaw Learning Memory",
+  "description": "Always-on memory: a context engine that injects a curated MEMORY.md + USER.md into every agent turn (including group/channel sessions), so bots keep context and rules instead of forgetting them.",
+  "version": "0.1.0",
+  "author": "tuanminhhole",
+  "license": "MIT",
+  "homepage": "https://github.com/tuanminhhole/openclaw-learning-memory",
+  "kind": "context-engine",
+  "enabledByDefault": false,
+  "activation": {
+    "onStartup": true
+  },
+  "capabilityTags": [
+    "memory",
+    "context-engine",
+    "always-on"
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable the always-on memory injection."
+      },
+      "charBudget": {
+        "type": "number",
+        "default": 3500,
+        "description": "Max characters of curated memory injected per turn (kept tight to force curation over accumulation). Older/overflowing content is trimmed."
+      },
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [
+          "MEMORY.md",
+          "USER.md"
+        ],
+        "description": "Workspace files (relative to the agent workspace) injected every turn, in order."
+      },
+      "header": {
+        "type": "string",
+        "description": "Optional heading text placed above the injected memory block."
+      }
+    },
+    "additionalProperties": true
+  },
+  "skills": [],
+  "providers": [],
+  "channels": []
+}

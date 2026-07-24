@@ -1,0 +1,61 @@
+{
+  "name": "openclaw-learning-memory",
+  "version": "0.1.0",
+  "description": "Always-on memory for OpenClaw agents — a context engine that injects a curated MEMORY.md + USER.md into every turn (including group/channel sessions), so bots stop forgetting context and rules.",
+  "type": "module",
+  "main": "index.js",
+  "exports": "./index.js",
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.5.7",
+      "minGatewayVersion": "2026.5.7"
+    },
+    "install": {
+      "clawhubSpec": "tuanminhhole/openclaw-learning-memory",
+      "defaultChoice": "clawhub",
+      "minHostVersion": ">=2026.5.7"
+    },
+    "build": {
+      "entry": "./index.js",
+      "openclawVersion": "2026.5.7",
+      "pluginSdkVersion": "2026.5.7"
+    },
+    "release": {
+      "publishToClawHub": true,
+      "publishToNpm": false
+    }
+  },
+  "license": "MIT",
+  "author": "tuanminhhole",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuanminhhole/openclaw-learning-memory.git"
+  },
+  "homepage": "https://github.com/tuanminhhole/openclaw-learning-memory",
+  "files": [
+    "index.js",
+    "src",
+    "docs",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check index.js",
+    "test": "node --test 'tests/*.test.js'",
+    "release": "node docs_dev/scripts/update.mjs"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "context-engine",
+    "memory",
+    "agent-memory"
+  ],
+  "peerDependencies": {
+    "openclaw": "*"
+  }
+}

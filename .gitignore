@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+*.log
+.DS_Store
+.env
+.agent/
+data/
+
+# Local dev tooling (not shipped, not committed)
+docs_dev/
