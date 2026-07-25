@@ -1,18 +1,18 @@
 /**
- * OpenClaw Learning Memory — always-on memory context engine.
+ * OpenClaw Learning Memory — always-on memory injection.
  *
- * Registers a context engine that injects a curated MEMORY.md + USER.md block into
- * EVERY agent turn (including group/channel sessions, which OpenClaw's default memory
- * recall excludes). This keeps bots from forgetting context and rules over time.
+ * Injects a curated MEMORY.md + USER.md block into EVERY agent turn (including
+ * group/channel sessions, which OpenClaw's default memory recall excludes).
  *
- * Select it per agent with:
- *   { "agents": { "defaults": { "plugins": { "slots": { "contextEngine": "learning-memory" } } } } }
- * (or the equivalent per-agent slot). See README for details.
+ * Two integration paths for maximum runtime compatibility:
+ *  - Context engine (assemble-before-prompt): for OpenClaw embedded / Codex runners
+ *  - before_prompt_build hook (prependContext): for CLI backends (claude-cli etc.)
  *
- * @author dongphuongman 
+ * @author dongphuongman
  */
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { createLearningMemoryEngine, ENGINE_ID } from "./src/engine.js";
+import { createLearningMemoryEngine, ENGINE_ID, parseGroupId } from "./src/engine.js";
+import { createMemorySource } from "./src/memory-source.js";
 
 const PLUGIN_ID = "learning-memory";
 
@@ -27,9 +27,38 @@ const plugin = definePluginEntry({
     const logger = api.logger;
     logger?.info?.("[learning-memory] registering always-on memory context engine");
 
-    api.registerContextEngine(ENGINE_ID, (ctx) =>
-      createLearningMemoryEngine({ ...ctx, logger }),
-    );
+    let resolvedConfig = {};
+
+    // Path 1: Context engine for embedded/Codex runners (assemble-before-prompt)
+    api.registerContextEngine(ENGINE_ID, (ctx) => {
+      resolvedConfig = ctx.config?.plugins?.entries?.[PLUGIN_ID]?.config || {};
+      return createLearningMemoryEngine({ ...ctx, logger });
+    });
+
+    // Path 2: before_prompt_build hook for CLI backends (claude-cli)
+    api.on("before_prompt_build", (_event, ctx) => {
+      try {
+        const workspaceDir = ctx.workspaceDir;
+        if (!workspaceDir) return {};
+
+        const hookConfig = resolvedConfig && Object.keys(resolvedConfig).length > 0
+          ? resolvedConfig
+          : {};
+
+        if (hookConfig.enabled === false) return {};
+
+        const source = createMemorySource({ workspaceDir, config: hookConfig, logger });
+        const groupId = parseGroupId(ctx.sessionKey);
+        const block = source.build(groupId);
+        if (block) {
+          logger?.info?.(`[learning-memory] hook injecting ${block.length} chars (group=${groupId || "none"})`);
+          return { prependContext: block };
+        }
+      } catch (err) {
+        logger?.warn?.(`[learning-memory] hook memory build failed: ${String(err)}`);
+      }
+      return {};
+    });
   },
 });
 
